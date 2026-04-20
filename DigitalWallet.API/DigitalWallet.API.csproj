@@ -21,9 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\" />
     <Folder Include="Data\" />
     <Folder Include="DTOs\" />
+    <Folder Include="Features\Auth\" />
+    <Folder Include="Features\Transactions\" />
+    <Folder Include="Features\Wallets\" />
+    <Folder Include="Features\Users\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
