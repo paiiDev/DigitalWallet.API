@@ -10,7 +10,7 @@ namespace DigitalWallet.API.Configurations
         {
             builder.HasOne(u => u.Wallet)
                 .WithOne(w => w.User)
-                .HasForeignKey<Wallet>(w => w.WalletId);
+                .HasForeignKey<Wallet>(w => w.UserId);
         }
     }
 }

@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>ebace705-41c4-466f-b77e-fbb9210ed688</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,17 +18,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.6" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\" />
-    <Folder Include="DTOs\" />
-    <Folder Include="Features\Auth\" />
     <Folder Include="Features\Transactions\" />
     <Folder Include="Features\Wallets\" />
     <Folder Include="Features\Users\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
