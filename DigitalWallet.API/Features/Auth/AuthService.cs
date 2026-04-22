@@ -1,6 +1,7 @@
 ﻿using DigitalWallet.API.Common;
 using DigitalWallet.API.Data;
 using DigitalWallet.API.DTOs.Auth;
+using DigitalWallet.API.Enums;
 using DigitalWallet.API.Helpers;
 using DigitalWallet.API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +46,36 @@ namespace DigitalWallet.API.Features.Auth
                 UserName = user.UserName
             };
             return Result<RegisterResponseDto>.Success(response);
+        }
+
+        public async Task<Result<LoginResponseDto>> LoginAsync(LoginRequestDto request)
+        {
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.MobileNumber == request.MobileNumber);
+
+            if(user is null)
+            {
+                return Result<LoginResponseDto>.Fail("Invalid mobile number or pin code");
+            }
+
+            var isValidPin = PasswordHasher.Verify(request.PinCode, user.PinCodeHash);
+            if (!isValidPin)
+            {
+                return Result<LoginResponseDto>.Fail("Invalid mobile number or pin code");
+            }
+
+            if(user.Status != UserStatus.Active)
+            {
+                return Result<LoginResponseDto>.Fail("User account is not active");
+            }
+
+            var response = new LoginResponseDto
+            {
+                UserId = user.UserId,
+                MobileNumber = user.MobileNumber,
+                UserName = user.UserName
+            };
+
+            return Result<LoginResponseDto>.Success(response);
         }
     }
 }

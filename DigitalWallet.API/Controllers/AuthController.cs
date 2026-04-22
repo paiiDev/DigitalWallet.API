@@ -26,5 +26,16 @@ namespace DigitalWallet.API.Controllers
             }
             return BadRequest(BaseResponse<RegisterResponseDto>.Fail(result.Error));
         }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginRequestDto request)
+        {
+            var result = await _authService.LoginAsync(request);
+            if (result.IsSuccess)
+            {
+                return Ok(BaseResponse<LoginResponseDto>.Ok(result.Value));
+            }
+            return BadRequest(BaseResponse<LoginResponseDto>.Fail(result.Error));
+        }
     }
 }

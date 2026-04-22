@@ -9,5 +9,11 @@
             var hash = sha256.ComputeHash(bytes);
             return Convert.ToBase64String(hash);
         }
+
+        public static bool Verify(string input, string hash)
+        {
+            var inputHash = Hash(input);
+            return inputHash == hash;
+        }
     }
 }
