@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DigitalWallet.API.Features.Auth
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
         private readonly AppDbContext _context;
         public AuthService(AppDbContext context)
