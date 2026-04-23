@@ -1,5 +1,6 @@
 using DigitalWallet.API.Data;
 using DigitalWallet.API.Features.Auth;
+using DigitalWallet.API.Features.Transactions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -37,6 +38,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService,  TokenService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 builder.Services.AddControllers();
 

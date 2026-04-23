@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Transactions\" />
     <Folder Include="Features\Wallets\" />
     <Folder Include="Features\Users\" />
   </ItemGroup>
