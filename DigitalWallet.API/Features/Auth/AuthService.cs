@@ -11,9 +11,11 @@ namespace DigitalWallet.API.Features.Auth
     public class AuthService : IAuthService
     {
         private readonly AppDbContext _context;
-        public AuthService(AppDbContext context)
+        private readonly ITokenService _tokenService;
+        public AuthService(AppDbContext context, ITokenService tokenService)
         {
             _context = context;
+            _tokenService = tokenService; 
         }
 
         public async Task<Result<RegisterResponseDto>> RegisterAsync(RegisterRequestDto request)
@@ -38,6 +40,7 @@ namespace DigitalWallet.API.Features.Auth
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
+
 
             var response = new RegisterResponseDto
             {
@@ -68,11 +71,14 @@ namespace DigitalWallet.API.Features.Auth
                 return Result<LoginResponseDto>.Fail("User account is not active");
             }
 
+            var token = _tokenService.GenerateToken(user.UserId, user.MobileNumber);
+
             var response = new LoginResponseDto
             {
                 UserId = user.UserId,
                 MobileNumber = user.MobileNumber,
-                UserName = user.UserName
+                UserName = user.UserName,
+                Token = token,
             };
 
             return Result<LoginResponseDto>.Success(response);
