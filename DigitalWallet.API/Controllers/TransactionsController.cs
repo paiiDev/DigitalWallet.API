@@ -32,5 +32,20 @@ namespace DigitalWallet.API.Controllers
 
             return Ok(BaseResponse<string>.Ok(result.Value));
         }
+
+        [HttpGet("Get Transaction")]
+        public async Task<IActionResult> GetTransactionHistory()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await _transactionService.GetTransactionsAsync(userId);
+            if (!result.IsSuccess) 
+            {
+                return BadRequest(BaseResponse<GetTransactionsResponseDto>.Fail(result.Error));
+            }
+
+            return Ok(BaseResponse<List<GetTransactionsResponseDto>>.Ok(result.Value));
+
+
+        }
     }
 }

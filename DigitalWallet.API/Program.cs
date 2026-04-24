@@ -42,6 +42,7 @@ builder.Services.AddScoped<ITokenService,  TokenService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IGetBalance, GetBalance>();
 
+
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

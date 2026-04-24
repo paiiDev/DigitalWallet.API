@@ -1,6 +1,7 @@
 ﻿using DigitalWallet.API.Common;
 using DigitalWallet.API.Data;
 using DigitalWallet.API.DTOs.Transactions;
+using DigitalWallet.API.Enums;
 using DigitalWallet.API.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -75,6 +76,30 @@ namespace DigitalWallet.API.Features.Transactions
                 await dbTx.RollbackAsync();
                 return Result<string>.Fail("Transaction failed. Please try again...");
             }
+        }
+
+        public async Task<Result<List<GetTransactionsResponseDto>>> GetTransactionsAsync(int userId)
+        {
+            var walletId = await _context.Wallets
+                                .Where(w => w.UserId == userId)
+                                .Select(w => w.WalletId)
+                                .FirstOrDefaultAsync();
+
+            if (walletId == 0) return Result<List<GetTransactionsResponseDto>>.Fail("Wallet not found");
+
+            var transactions = await _context.Transactions
+                                .Where(t => t.FromWalletId == walletId || t.ToWalletId == walletId)
+                                .OrderByDescending(t => t.Timestamp)
+                                .Select(t => new GetTransactionsResponseDto
+                                {
+                                    Amount = t.Amount,
+                                    Type = t.TransactionType.ToString(),
+                                    CreatedAt = t.Timestamp,
+                                    FromWalletId = (int)t.FromWalletId,
+                                    ToWalletId = t.ToWalletId
+                                }).ToListAsync();
+
+            return Result<List<GetTransactionsResponseDto>>.Success(transactions);
         }
     }
 }
