@@ -2,6 +2,7 @@
 using DigitalWallet.API.Data;
 using DigitalWallet.API.DTOs.Transactions;
 using DigitalWallet.API.Enums;
+using DigitalWallet.API.Helpers;
 using DigitalWallet.API.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -96,10 +97,27 @@ namespace DigitalWallet.API.Features.Transactions
             var query =  _context.Transactions
                         .Where(t => t.FromWalletId == walletId || t.ToWalletId == walletId);
 
+            if(request.FromDate.HasValue)
+            {
+                var from = request.FromDate.Value.Date;
+                query = query.Where(t => t.Timestamp >= from);
+            }
+            if(request.ToDate.HasValue)
+            {
+                var to = request.ToDate.Value.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(t => t.Timestamp <= to);
+            }
+            if(request.Type.HasValue)
+            {
+                query = query.Where(t => t.TransactionType == request.Type.Value);
+            }
+
+            var pageSize = Math.Clamp(request.PageSize, 1, 100);
+
             var totalCount = await query.CountAsync();
 
             var transactions = await query.OrderByDescending(t => t.Timestamp)
-                                .Skip((request.PageNumber - 1) * request.PageSize)
+                                .Skip((request.PageNumber - 1) * pageSize)
                                 .Take(request.PageSize)
                                 .Select(t => new GetTransactionsResponseDto
                                 {
@@ -108,9 +126,12 @@ namespace DigitalWallet.API.Features.Transactions
                                     FromWalletId = (int)t.FromWalletId!,
                                     CreatedAt = t.Timestamp,
                                     Type = t.TransactionType.ToString()
-
-
                                 }).ToListAsync();
+
+            foreach (var tx in transactions)
+            {
+                tx.CreatedAt = MyanmarTimeChanger.ConvertToMyanmarTime(tx.CreatedAt);
+            }
             var response = new PagedTransactionsResponse<GetTransactionsResponseDto>
             {
                 Data = transactions,
