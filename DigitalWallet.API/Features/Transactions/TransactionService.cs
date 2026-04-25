@@ -17,12 +17,12 @@ namespace DigitalWallet.API.Features.Transactions
 
         public async Task<Result<string>> TransferAsync(int senderUserId, TransactionRequestDto request)
         {
-            if(request.Amount <= 0)
+            if (request.Amount <= 0)
             {
                 return Result<string>.Fail("Amount must be greater than zero");
             }
 
-            var sender = await _context.Users.Include( u => u.Wallet).FirstOrDefaultAsync(x => x.UserId == senderUserId);
+            var sender = await _context.Users.Include(u => u.Wallet).FirstOrDefaultAsync(x => x.UserId == senderUserId);
             if (sender == null)
             {
                 return Result<string>.Fail("Sender not found");
@@ -34,17 +34,17 @@ namespace DigitalWallet.API.Features.Transactions
                 return Result<string>.Fail("Receiver not found");
             }
 
-            if(sender.UserId == receiver.UserId)
+            if (sender.UserId == receiver.UserId)
             {
                 return Result<string>.Fail("Cannot transer to yourself");
             }
 
-            if( sender.Status != Enums.UserStatus.Active || receiver.Status != Enums.UserStatus.Active)
+            if (sender.Status != Enums.UserStatus.Active || receiver.Status != Enums.UserStatus.Active)
             {
                 return Result<string>.Fail("Sender or Receiver is not active");
             }
 
-            if(sender.Wallet.Balance < request.Amount)
+            if (sender.Wallet.Balance < request.Amount)
             {
                 return Result<string>.Fail("Insufficient balance");
             }
@@ -78,28 +78,48 @@ namespace DigitalWallet.API.Features.Transactions
             }
         }
 
-        public async Task<Result<List<GetTransactionsResponseDto>>> GetTransactionsAsync(int userId)
+        public async Task<Result<PagedTransactionsResponse<GetTransactionsResponseDto>>> GetTransactionsAsync(int userId, GetTransactionsRequestDto request)
         {
-            var walletId = await _context.Wallets
-                                .Where(w => w.UserId == userId)
-                                .Select(w => w.WalletId)
-                                .FirstOrDefaultAsync();
+            var user = await _context.Users
+                        .Include(u => u.Wallet)
+                        .FirstOrDefaultAsync(x => x.UserId == userId);
+            if (user is null)
+            {
+                return Result<PagedTransactionsResponse<GetTransactionsResponseDto>>.Fail("User not found");
+            }
+            if (user.Status != UserStatus.Active)
+            {
+                return Result<PagedTransactionsResponse<GetTransactionsResponseDto>>.Fail("User is not active");
 
-            if (walletId == 0) return Result<List<GetTransactionsResponseDto>>.Fail("Wallet not found");
+            }
+            var walletId = user.Wallet.WalletId;
+            var query =  _context.Transactions
+                        .Where(t => t.FromWalletId == walletId || t.ToWalletId == walletId);
 
-            var transactions = await _context.Transactions
-                                .Where(t => t.FromWalletId == walletId || t.ToWalletId == walletId)
-                                .OrderByDescending(t => t.Timestamp)
+            var totalCount = await query.CountAsync();
+
+            var transactions = await query.OrderByDescending(t => t.Timestamp)
+                                .Skip((request.PageNumber - 1) * request.PageSize)
+                                .Take(request.PageSize)
                                 .Select(t => new GetTransactionsResponseDto
                                 {
                                     Amount = t.Amount,
-                                    Type = t.TransactionType.ToString(),
+                                    ToWalletId = t.ToWalletId,
+                                    FromWalletId = (int)t.FromWalletId!,
                                     CreatedAt = t.Timestamp,
-                                    FromWalletId = (int)t.FromWalletId,
-                                    ToWalletId = t.ToWalletId
-                                }).ToListAsync();
+                                    Type = t.TransactionType.ToString()
 
-            return Result<List<GetTransactionsResponseDto>>.Success(transactions);
+
+                                }).ToListAsync();
+            var response = new PagedTransactionsResponse<GetTransactionsResponseDto>
+            {
+                Data = transactions,
+                TotalCount = totalCount,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            };
+
+            return Result<PagedTransactionsResponse<GetTransactionsResponseDto>>.Success(response);
         }
     }
 }

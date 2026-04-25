@@ -34,16 +34,17 @@ namespace DigitalWallet.API.Controllers
         }
 
         [HttpGet("Get Transaction")]
-        public async Task<IActionResult> GetTransactionHistory()
+        public async Task<IActionResult> GetTransactionHistory([FromQuery] GetTransactionsRequestDto request)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var result = await _transactionService.GetTransactionsAsync(userId);
+
+            var result = await _transactionService.GetTransactionsAsync(userId,  request);
             if (!result.IsSuccess) 
             {
                 return BadRequest(BaseResponse<GetTransactionsResponseDto>.Fail(result.Error));
             }
 
-            return Ok(BaseResponse<List<GetTransactionsResponseDto>>.Ok(result.Value));
+            return Ok(BaseResponse<PagedTransactionsResponse<GetTransactionsResponseDto>>.Ok(result.Value));
 
 
         }
