@@ -11,6 +11,9 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddLog4Net();
+
 var jwtkey = builder.Configuration["Jwt:key"];
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

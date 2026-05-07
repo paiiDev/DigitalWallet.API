@@ -11,14 +11,17 @@ namespace DigitalWallet.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        public AuthController(IAuthService authService)
+        public readonly ILogger<AuthController> _logger;
+        public AuthController(IAuthService authService, ILogger<AuthController> logger)
         {
             _authService = authService;
+            _logger = logger;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequestDto request)
         {
+            _logger.LogInformation("Received registration request for mobile number: {MobileNumber}", request.MobileNumber);
             var result = await _authService.RegisterAsync(request);
             if (result.IsSuccess)
             {
